@@ -1,0 +1,60 @@
+name: Sync Upstream & Build
+
+on:
+  schedule:
+    # 北京时间 00:00 = UTC 16:00
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add upstream remote and fetch
+        run: |
+          git remote add upstream https://github.com/WildKernels/GKI_KernelSU_SUSFS.git
+          git fetch upstream
+
+      - name: Check for new upstream commits and sync
+        id: sync
+        run: |
+          UPSTREAM_HEAD=$(git rev-parse upstream/main)
+          LOCAL_HEAD=$(git rev-parse HEAD)
+
+          if [ "$UPSTREAM_HEAD" = "$LOCAL_HEAD" ]; then
+            echo "✅ No new upstream commits. Nothing to do."
+            echo "synced=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "🔄 New upstream commits found! Syncing..."
+          echo "  Local:  ${LOCAL_HEAD}"
+          echo "  Upstream: ${UPSTREAM_HEAD}"
+          echo "  Commits behind:"
+          git log --oneline HEAD..upstream/main
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git merge upstream/main --no-edit
+          git push origin main
+
+          echo "synced=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger kernel build (main.yml)
+        if: steps.sync.outputs.synced == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚀 Triggering kernel build workflow..."
+          gh workflow run main.yml --ref main
+          echo "✅ Build triggered successfully!"
