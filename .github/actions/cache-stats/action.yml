@@ -93,7 +93,7 @@ runs:
         echo "🔍 DEBUG: Running ccache -s for stats parsing"
         STATS="$(ccache -s)"
         echo "🔍 DEBUG: Raw ccache stats captured"
-                
+        
         echo "🔍 DEBUG: Parsing ccache statistics"
         echo "🔍 DEBUG: Raw STATS (first 10 lines):"
         echo "$STATS" | head -n 10
@@ -115,7 +115,7 @@ runs:
           print substr($0, RSTART, RLENGTH)
         }' | head -n1)
         echo "🔍 DEBUG: DIRECT=$DIRECT"
-                
+        
         echo "🔍 DEBUG: Calculating hit rates"
         echo "🔍 DEBUG: CACHEABLE=${CACHEABLE:-0}, HITS=${HITS:-0}, DIRECT=${DIRECT:-0}"
         if [ "${CACHEABLE:-0}" -gt 0 ]; then
@@ -204,7 +204,7 @@ runs:
         echo "===================="
         summarize_dir /home/runner/.cache/bazel 10 5 || true
         echo "🔍 DEBUG: Bazel cache folder stats section complete"
-                
+        
     - name: Show ld cache folder Stats
       shell: bash
       working-directory: ${{ github.workspace }}
