@@ -1,4 +1,4 @@
-# Wild Kernels for GKI2 Devices 5.10+ Release #
+# JH Kernels for GKI2 Devices 5.10+ Release #
 
 **IMPORTANT DISCLAIMER**
 
